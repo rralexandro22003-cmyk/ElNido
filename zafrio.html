@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EL NIDO</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
+body{
+  background:radial-gradient(circle,#3b0000,#120000,#000);
+  color:white;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+header{text-align:center;padding:20px;}
+h1{font-size:3rem;color:#ff0033;}
+.subtitulo{color:#ff6688;font-style:italic;}
+.pio{display:inline-block;animation:pio 1s infinite;}
+.pio:nth-child(2){animation-delay:.3s;}
+@keyframes pio{50%{transform:translateY(-10px);}}
+
+/* ⚙ TUERCA BLANCA FIJA */
+.config-btn{
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:none;
+  color:white;
+  border:none;
+  width:55px;
+  height:55px;
+  font-size:32px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:.2s;
+  z-index:1000;
+}
+.config-btn:hover{transform:scale(1.15);}
+
+/* PANEL */
+.panel{
+  position:fixed;
+  top:90px;
+  right:20px;
+  width:350px;
+  padding:20px;
+  border-radius:20px;
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(20px);
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(-20px);
+  transition:.3s;
+  z-index:999;
+}
+.panel.visible{
+  opacity:1;
+  pointer-events:auto;
+  transform:translateY(0);
+}
+.panel .cerrar{
+  position:absolute;
+  top:10px;
+  right:15px;
+  background:none;
+  border:none;
+  color:#ff0033;
+  font-size:22px;
+  cursor:pointer;
+}
+
+.inputs{display:grid;gap:12px;margin-top:20px;}
+input,select{
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:rgba(255,255,255,.1);
+  color:white;
+}
+select option{background:#1a0000;color:white;}
+.btn-agregar{
+  padding:14px;
+  background:#ff0033;
+  color:white;
+  border-radius:14px;
+  cursor:pointer;
+}
+
+.buscador-container{text-align:center;margin:40px;}
+#buscador{
+  padding:12px;
+  width:250px;
+  border-radius:30px;
+  border:none;
+  background:rgba(255,255,255,.05);
+  color:white;
+}
+
+/* NAV ICONOS MINIMALISTAS ROJOS */
+.nav{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  margin:30px;
+}
+.nav button{
+  padding:20px 30px;
+  border-radius:20px;
+  background:rgba(255,255,255,.05);
+  border:2px solid #ff0033;
+  cursor:pointer;
+  transition:.2s;
+}
+.nav button svg{
+  width:36px;
+  height:36px;
+  transition:.2s;
+}
+.nav button:hover{
+  transform:scale(1.1);
+  background:white;
+}
+.nav button:hover svg path,
+.nav button:hover svg rect{
+  fill:#ff0033;
+}
+.nav .activo{
+  background:#ff0033;
+}
+.nav .activo svg path,
+.nav .activo svg rect{
+  fill:white;
+}
+
+.seccion{display:none;padding:30px;}
+.seccion.activa{display:block;}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:20px;
+}
+
+.tarjeta{
+  background:rgba(255,255,255,.04);
+  border-radius:18px;
+  padding:15px;
+}
+
+img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+.btn-borrar{
+  margin-top:10px;
+  width:100%;
+  padding:10px;
+  background:#550000;
+  color:white;
+  border-radius:10px;
+}
+
+.video-mini{
+  width:150px;
+  height:85px;
+  border-radius:10px;
+  display:block;
+  margin:10px auto;
+}
+
+.volumen{width:100%;margin-top:10px;}
+
+.controles-musica{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+.controles-musica button{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  background:#550000;
+  color:white;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>EL NIDO</h1>
+  <div class="subtitulo"><span class="pio">pio</span><span class="pio">pio</span></div>
+</header>
+
+<!-- TEXTO DE SECCIÓN ACTUAL -->
+<h2 id="seccion-actual" style="text-align:center; color:#ff6688; margin-top:10px;">
+  Estás en: Películas
+</h2>
+
+<button class="config-btn" onclick="togglePanel()">⚙</button>
+
+<div class="panel" id="panel">
+  <button class="cerrar" onclick="togglePanel()">✖</button>
+  <div class="inputs">
+    <select id="tipo">
+      <option value="peliculas">Película</option>
+      <option value="series">Serie</option>
+      <option value="musica">Música (YouTube)</option>
+    </select>
+    <input id="titulo" placeholder="Título">
+    <input id="anio" type="number" placeholder="Año">
+    <input id="video" placeholder="YouTube URL">
+    <button class="btn-agregar" onclick="agregarContenido()">Agregar</button>
+  </div>
+</div>
+
+<div class="buscador-container">
+  <input id="buscador" placeholder="Buscar" onkeyup="buscarContenido()">
+</div>
+
+<!-- ICONOS MINIMALISTAS ROJOS -->
+<div class="nav">
+
+  <!-- PELÍCULAS -->
+  <button onclick="mostrar('peliculas',this)">
+    <svg viewBox="0 0 24 24">
+      <path fill="#ff0033" d="M3 4h18v16H3z"/>
+      <path fill="white" d="M3 4l4 4h4l-4-4zm6 0l4 4h4l-4-4z"/>
+    </svg>
+  </button>
+
+  <!-- SERIES -->
+  <button class="activo" onclick="mostrar('series',this)">
+    <svg viewBox="0 0 24 24">
+      <rect x="3" y="6" width="18" height="12" rx="2" fill="#ff0033"/>
+      <rect x="10" y="18" width="4" height="2" fill="white"/>
+    </svg>
+  </button>
+
+  <!-- MÚSICA -->
+  <button onclick="mostrar('musica',this)">
+    <svg viewBox="0 0 24 24">
+      <path fill="#ff0033" d="M9 3v12.5a3.5 3.5 0 11-2-3.15V6l10-2v9.5a3.5 3.5 0 11-2-3.15V3z"/>
+    </svg>
+  </button>
+
+</div>
+
+<div class="seccion activa" id="peliculas"><div class="grid" id="grid-peliculas"></div></div>
+<div class="seccion" id="series"><div class="grid" id="grid-series"></div></div>
+<div class="seccion" id="musica"><div class="grid" id="grid-musica"></div></div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+
+let contenido = JSON.parse(localStorage.getItem("elnido")) || [];
+let players = {};
+let modoBucle = false;
+let modoAleatorio = false;
+
+function togglePanel(){
+  document.getElementById("panel").classList.toggle("visible");
+}
+
+function mostrar(id,btn){
+  document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"));
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("activo"));
+  document.getElementById(id).classList.add("activa");
+  btn.classList.add("activo");
+
+  let nombre = "";
+  if(id === "peliculas") nombre = "Películas";
+  if(id === "series") nombre = "Series";
+  if(id === "musica") nombre = "Música";
+
+  document.getElementById("seccion-actual").textContent = "Estás en: " + nombre;
+}
+
+function guardar(){
+  localStorage.setItem("elnido", JSON.stringify(contenido));
+}
+
+function agregarContenido(){
+  let tipo = document.getElementById("tipo").value;
+  let t = document.getElementById("titulo").value.trim();
+  let a = document.getElementById("anio").value.trim();
+  let u = document.getElementById("video").value.trim();
+
+  if(!t || !a || !u){
+    alert("Completa todo");
+    return;
+  }
+
+  contenido.push({tipo:tipo, titulo:t, anio:a, url:u});
+  guardar();
+  renderizar();
+}
+
+function borrarContenido(i){
+  contenido.splice(i,1);
+  guardar();
+  renderizar();
+}
+
+function extraerID(url){
+  if(url.indexOf("v=") !== -1) return url.split("v=")[1].split("&")[0];
+  if(url.indexOf("youtu.be") !== -1) return url.split("youtu.be/")[1].split("?")[0];
+  return "";
+}
+
+function renderizar(){
+  ["peliculas","series","musica"].forEach(t=>{
+    document.getElementById("grid-"+t).innerHTML = "";
+  });
+
+  contenido.forEach((item,i)=>{
+    let id = extraerID(item.url);
+    let media = "";
+
+    if(item.tipo === "musica"){
+      media =
+        '<iframe id="yt-'+i+'" class="video-mini" src="https://www.youtube.com/embed/'+id+'?enablejsapi=1"></iframe>'+
+        '<input type="range" min="0" max="100" value="50" class="volumen" oninput="cambiarVolumen('+i+',this.value)">'+
+        '<div class="controles-musica">'+
+          '<button onclick="toggleAudio('+i+')">▶</button>'+
+          '<button onclick="activarBucle()">🔁</button>'+
+          '<button onclick="activarAleatorio()">🔀</button>'+
+        '</div>';
+    } else {
+      media = '<img src="https://img.youtube.com/vi/'+id+'/hqdefault.jpg" onclick="window.open(\''+item.url+'\')">';
+    }
+
+    document.getElementById("grid-"+item.tipo).innerHTML +=
+      '<div class="tarjeta">'+
+        '<h3>'+item.titulo+'</h3>'+
+        '<p>'+item.anio+'</p>'+
+        media+
+        '<button class="btn-borrar" onclick="borrarContenido('+i+')">Eliminar</button>'+
+      '</div>';
+  });
+}
+
+function onYouTubeIframeAPIReady(){
+  contenido.forEach((item,i)=>{
+    if(item.tipo === "musica"){
+      players[i] = new YT.Player("yt-"+i,{
+        events:{ onStateChange:(e)=>revisarFin(e,i) }
+      });
+    }
+  });
+}
+
+function toggleAudio(i){
+  let p = players[i];
+  if(!p) return;
+  if(p.getPlayerState() !== 1) p.playVideo();
+  else p.pauseVideo();
+}
+
+function cambiarVolumen(i,v){
+  if(players[i]) players[i].setVolume(v);
+}
+
+function activarBucle(){
+  modoBucle = !modoBucle;
+  alert("Bucle: "+(modoBucle?"ON":"OFF"));
+}
+
+function activarAleatorio(){
+  modoAleatorio = true;
+  reproducirAleatorio();
+}
+
+function reproducirAleatorio(){
+  let m = contenido.map((x,i)=>x.tipo==="musica"?i:null).filter(x=>x!==null);
+  if(m.length === 0) return;
+  players[m[Math.floor(Math.random()*m.length)]].playVideo();
+}
+
+function revisarFin(e,i){
+  if(e.data === 0){
+    if(modoBucle) players[i].playVideo();
+    else if(modoAleatorio) reproducirAleatorio();
+  }
+}
+
+function buscarContenido(){
+  let t = document.getElementById("buscador").value.toLowerCase();
+  document.querySelectorAll(".tarjeta").forEach(x=>{
+    x.style.display = x.textContent.toLowerCase().includes(t) ? "block" : "none";
+  });
+}
+
+renderizar();
+
+</script>
+
+</body>
+</html>
